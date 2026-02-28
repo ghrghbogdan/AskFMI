@@ -91,7 +91,6 @@ The "askFMI" system is engineered as a **distributed, microservice-based applica
 | **Sebastian Sincari** | AI Core & MLOps | Contributing to RAG logic, initializing the workspace for LLM hosting, deployment and LLM monitoring (Azure/GCP). | 
 | **Gheorghe Bogdan** | AI Core & MLOps | Mistral-7B LLM fine-tuning, developing RAG logic (Retrieval-Augmented Generation), managing the vectorial database . |
 
-
 ## C4 Diagrams
 
 ### Context Diagram

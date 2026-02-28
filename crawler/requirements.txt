@@ -1,0 +1,4 @@
+scrapy
+pdfplumber
+pymupdf
+itemadapter

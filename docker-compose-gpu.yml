@@ -1,0 +1,48 @@
+version: '3.8'
+
+services:
+  ai-core:
+    build:
+      context: ./ai-core-fastapi
+      dockerfile: Dockerfile
+    container_name: askfmi_ai_core
+    runtime: nvidia
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=0
+      - NVIDIA_DRIVER_CAPABILITIES=compute,utility
+      - CUDA_VISIBLE_DEVICES=0
+      - MODEL_DIR=/app/model
+    ports:
+      - "8000:8000"
+    volumes:
+      - shared_data:/app/data
+      - /home/ASUS/Nemira-LLM/model/romistral_model:/app/model:ro
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              device_ids: ['0']
+              capabilities: [gpu]
+    shm_size: '4gb'
+    ulimits:
+      memlock: -1
+      stack: 67108864
+
+  crawler:
+    build:
+      context: ./crawler
+      dockerfile: Dockerfile
+    container_name: askfmi_crawler
+    volumes:
+      - shared_data:/app/crawler/max-data
+
+volumes:
+  shared_data:
+
+
+  # docker rm -f askfmi_ai_core
+  # docker compose -f docker-compose-gpu.yml build --no-cache ai-core
+  # docker compose -f docker-compose-gpu.yml up -d ai-core
+
+  

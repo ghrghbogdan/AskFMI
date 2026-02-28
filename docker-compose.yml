@@ -1,0 +1,52 @@
+version: '3.8'
+
+services:
+  # Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: askfmi_db
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_DB=askfmi_local
+      - POSTGRES_USER=askfmi_user
+      - POSTGRES_PASSWORD=askfmi_password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U askfmi_user -d askfmi_local" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Backend (Spring Boot)
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: askfmi_backend
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/askfmi_local
+      - SPRING_DATASOURCE_USERNAME=askfmi_user
+      - SPRING_DATASOURCE_PASSWORD=askfmi_password
+      # Connection to Node 2 (AI Service) - Default placeholder, User must update .env
+      - AI_API_URL=${AI_API_URL:-http://host.docker.internal:8000}
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  # Frontend (React + Nginx)
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: askfmi_frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:

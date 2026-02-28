@@ -1,0 +1,92 @@
+name: Deploy GPU Node (AI Core)
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'ai-core-fastapi/**'
+      - '.github/workflows/deploy-gpu.yml'
+  workflow_dispatch:
+
+jobs:
+  test-ai-core:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+          cache: 'pip'
+
+      - name: Install dependencies
+        working-directory: ./ai-core-fastapi
+        run: |
+          pip install -r requirements.txt
+
+      - name: Run Tests
+        working-directory: ./ai-core-fastapi
+        run: |
+          pytest tests/test_sanity.py
+
+  build-and-push-gpu:
+    needs: test-ai-core
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build and push AI Core
+        uses: docker/build-push-action@v5
+        with:
+          context: ./ai-core-fastapi
+          file: ./ai-core-fastapi/Dockerfile
+          push: true
+          tags: ${{ secrets.DOCKER_USERNAME }}/askfmi-ai-core:latest
+
+  deploy-gpu:
+    needs: build-and-push-gpu
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Copy docker-compose-gpu.prod.yml to GPU VPS
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SSH_HOST_GPU }}
+          username: ${{ secrets.SSH_USER_GPU }}
+          key: ${{ secrets.SSH_KEY_GPU }}
+          source: "docker-compose-gpu.prod.yml"
+          target: "~/askfmi-gpu/"
+
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST_GPU }}
+          username: ${{ secrets.SSH_USER_GPU }}
+          key: ${{ secrets.SSH_KEY_GPU }}
+          script: |
+            mkdir -p ~/askfmi-gpu
+            cd ~/askfmi-gpu
+            
+            # Export secrets
+            export DOCKER_USERNAME=${{ secrets.DOCKER_USERNAME }}
+            export HUGGINGFACE_TOKEN=${{ secrets.HUGGINGFACE_TOKEN }}
+
+            # Login to pull private images
+            echo ${{ secrets.DOCKER_PASSWORD }} | docker login -u ${{ secrets.DOCKER_USERNAME }} --password-stdin
+
+            # Pull latest images
+            docker compose -f docker-compose-gpu.prod.yml pull
+
+            # Restart services
+            docker compose -f docker-compose-gpu.prod.yml up -d --remove-orphans

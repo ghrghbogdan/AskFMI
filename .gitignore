@@ -1,0 +1,97 @@
+**/__pycache__/
+ft-env
+ai-core-fastapi/finetuning-data
+ai-core-fastapi/model
+ai-core-fastapi/__pycache__
+ai-core-fastapi/chroma_db_parent
+ai-core-fastapi/chroma_db_store
+ai-core-fastapi/data_facultate
+ai-core-fastapi/docstore_parent
+# Java
+*.class
+*.jar
+*.war
+*.ear
+target/
+!.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+# Gradle
+.gradle/
+build/
+!**/src/main/**/build/
+!**/src/test/**/build/
+gradle-app.setting
+!gradle-wrapper.jar
+.gradletasknamecache
+
+# Spring Boot
+spring-boot-starter-*.jar
+*.log
+
+# IDE
+.vscode/
+.idea/
+*.iml
+*.iws
+*.ipr
+.vs/
+*.swp
+*.swo
+*~
+.settings/
+.classpath
+.project
+.factorypath
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+backend/.env
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+db.sqlite3
+
+# Logs
+*.log
+logs/
+backend/logs/
+
+# OS
+.DS_Store
+Thumbs.db
+*.bak
+
+# Testing
+.coverage
+htmlcov/
+.pytest_cache/
+.tox/
+coverage/
+test-output/
+
+# Maven
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+
+# Node (if you have frontend)
+node_modules/
+npm-debug.log
+yarn-error.log
+frontend/node_modules/
+frontend/build/
+frontend/dist/
+
+venv/
+db.py
+db.sh
